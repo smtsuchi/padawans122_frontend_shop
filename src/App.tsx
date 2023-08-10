@@ -4,14 +4,38 @@ import Product from './Product'
 import { CartType, ProductType, UserType } from './types';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { getDatabase, ref, set, child, get } from 'firebase/database';
+import Message from './Message';
 
-const STRIPE_KEY = ''
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_API_KEY
 
 
 function App() {
   const [products, setProducts] = useState([])
+  const [message, setMessage] = useState('')
+  const [color, setColor] = useState('')
   const [user, setUser] = useState({} as UserType)
   const [cart, setCart] = useState({} as CartType)
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+
+    if (query.get("success")) {
+      setMessage("Order placed! You will receive an email confirmation.");
+      setColor("#5cb85c");
+    }
+
+    if (query.get("canceled")) {
+      setMessage(
+        "Order canceled -- continue to shop around and checkout when you're ready."
+      );
+      setColor('#FF7276');
+    }
+  }, []);
+
+  const resetMessage = () => {
+    setMessage('')
+    setColor('')
+  }
 
   const addToDB = (cart: CartType) => {
     const db = getDatabase();
@@ -82,6 +106,10 @@ function App() {
   const showCart = () => {
     return Object.keys(cart).map((key: string, index: number) => <p key={index}>{cart[key].name} x{cart[key].qty}</p>)
   }
+  
+  const generateInputTags = () => {
+    return Object.keys(cart).map((key: string, index: number) => <input key={`input_${index}`} name={cart[key].default_price} value={cart[key].qty} hidden/>)
+  };
 
   const createPopup = async () => {
     const auth = getAuth();
@@ -99,10 +127,9 @@ function App() {
     setUser(myUser)
   };
 
-
-
   return (
     <div>
+      {message?<Message message={message} color={color} resetMessage={resetMessage}/>:''}
       <h1>My Shop</h1>
       <main>
         {showProducts()}
@@ -114,6 +141,11 @@ function App() {
         <button onClick={createPopup} >Sign In With Google</button>
       }
       {showCart()}
+
+      <form method='POST' action='http://127.0.0.1:5000/api/checkout'>
+        {generateInputTags()}
+        <button type='submit'>Check Out</button>
+      </form>
 
     </div>
   )

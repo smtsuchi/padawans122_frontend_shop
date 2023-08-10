@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { ProductType } from './types'
-const STRIPE_KEY = ''
+
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_API_KEY
 
 interface ProductProps {
     product: ProductType,
