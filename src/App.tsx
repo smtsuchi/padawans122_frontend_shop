@@ -7,6 +7,7 @@ import { getDatabase, ref, set, child, get } from 'firebase/database';
 import Message from './Message';
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_API_KEY
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL
 
 
 function App() {
@@ -142,7 +143,7 @@ function App() {
       }
       {showCart()}
 
-      <form method='POST' action='http://127.0.0.1:5000/api/checkout'>
+      <form method='POST' action={BACKEND_URL + '/api/checkout'}>
         {generateInputTags()}
         <button type='submit'>Check Out</button>
       </form>
